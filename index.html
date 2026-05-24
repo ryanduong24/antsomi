@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antsomi CDP — AI Agent Đánh giá Use Case</title>
+<style>
+  :root {
+    --navy:#1F3A5F; --blue:#2E75B6; --lightblue:#D5E8F0; --accent:#C0392B;
+    --green:#1E8E5A; --amber:#C77700; --grey:#6B7280; --bg:#F4F6F9;
+    --card:#FFFFFF; --border:#E2E6EC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1A1A1A;background:var(--bg);min-height:100vh;}
+  .topbar{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:14px;}
+  .logo-mark{width:38px;height:38px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;border:2px solid #fff;}
+  .topbar h1{font-size:18px;font-weight:700;}
+  .topbar .sub{font-size:12.5px;color:#B8C6D9;margin-top:2px;}
+  .badge-demo{margin-left:auto;font-size:11px;background:rgba(255,255,255,.14);padding:5px 11px;border-radius:20px;letter-spacing:.4px;}
+  .wrap{max-width:980px;margin:26px auto 0;padding:0 22px 50px;}
+  .intro{background:var(--card);border:1px solid var(--border);border-left:5px solid var(--blue);border-radius:10px;padding:18px 22px;margin-bottom:22px;}
+  .intro h2{font-size:16px;color:var(--navy);margin-bottom:6px;}
+  .intro p{font-size:13.5px;color:#4A5568;line-height:1.6;}
+  .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .panel-label{font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--grey);text-transform:uppercase;margin-bottom:10px;}
+  textarea{width:100%;min-height:110px;border:1.5px solid var(--border);border-radius:9px;padding:13px 15px;font-size:14px;font-family:inherit;resize:vertical;line-height:1.55;}
+  textarea:focus{outline:none;border-color:var(--blue);}
+  .examples{margin-top:14px;}
+  .examples .lbl{font-size:12px;color:var(--grey);margin-bottom:8px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{font-size:12px;background:var(--lightblue);color:var(--navy);border:1px solid #BCD9E8;padding:7px 12px;border-radius:16px;cursor:pointer;transition:background .15s;}
+  .chip:hover{background:#C2E0EE;}
+  .actions{margin-top:16px;display:flex;gap:10px;}
+  .btn-primary{background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:600;padding:12px 26px;border-radius:9px;cursor:pointer;}
+  .btn-primary:hover:not(:disabled){background:#265F94;}
+  .btn-primary:disabled{background:#9DB5CC;cursor:not-allowed;}
+  .btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--grey);font-size:13px;padding:11px 18px;border-radius:9px;cursor:pointer;}
+  .loading{margin-top:22px;display:flex;align-items:center;gap:12px;color:var(--grey);font-size:13.5px;}
+  .spinner{width:20px;height:20px;border:2.5px solid var(--lightblue);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .stage{margin-top:10px;font-size:12.5px;color:var(--grey);}
+  .err{margin-top:18px;background:#FDECEA;border:1px solid #F5C6C2;color:#9B2C2C;padding:13px 16px;border-radius:9px;font-size:13px;}
+  .result{margin-top:22px;}
+  .verdict{border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:16px;color:#fff;}
+  .verdict.feasible{background:linear-gradient(135deg,#1E8E5A,#25A86B);}
+  .verdict.partial{background:linear-gradient(135deg,#C77700,#E08C13);}
+  .verdict.out{background:linear-gradient(135deg,#B23B3B,#C0392B);}
+  .verdict-icon{width:46px;height:46px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+  .verdict-text .v-title{font-size:18px;font-weight:700;}
+  .verdict-text .v-score{font-size:12.5px;opacity:.9;margin-top:2px;}
+  .res-card{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:20px 22px;}
+  .res-section{margin-bottom:18px;}
+  .res-section:last-child{margin-bottom:0;}
+  .res-h{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;gap:7px;}
+  .res-h .dot{width:7px;height:7px;border-radius:50%;background:var(--blue);}
+  .res-p{font-size:13.5px;line-height:1.65;color:#2D3748;}
+  .res-list{list-style:none;}
+  .res-list li{font-size:13px;line-height:1.6;color:#2D3748;padding-left:20px;position:relative;margin-bottom:6px;}
+  .res-list li::before{content:"";position:absolute;left:4px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--blue);}
+  .res-list.steps{counter-reset:s;}
+  .res-list.steps li{padding-left:26px;}
+  .res-list.steps li::before{counter-increment:s;content:counter(s);width:17px;height:17px;border-radius:50%;background:var(--navy);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;left:0;top:2px;}
+  .tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px;margin:0 6px 6px 0;background:var(--lightblue);color:var(--navy);}
+  .feature-row{display:flex;gap:9px;font-size:13px;padding:7px 0;border-bottom:1px dashed var(--border);}
+  .feature-row:last-child{border-bottom:none;}
+  .feature-row .fn{font-weight:600;color:var(--navy);}
+  .feature-row .fr{color:#5A6573;}
+  .warn-box{background:#FFF6E8;border:1px solid #F0DCB4;border-left:4px solid var(--amber);border-radius:8px;padding:11px 14px;}
+  .disclaimer{margin-top:14px;font-size:11.5px;color:#9098A3;line-height:1.6;text-align:center;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo-mark">A</div>
+  <div>
+    <h1>Antsomi CDP — AI Agent Đánh giá Use Case</h1>
+    <div class="sub">Brand mô tả bài toán → AI phản hồi tính khả thi trên nền tảng</div>
+  </div>
+  <div class="badge-demo">BẢN CHẠY THẬT</div>
+</div>
+<div class="wrap">
+  <div class="intro">
+    <h2>AI Agent này làm gì?</h2>
+    <p>Brand giao một bài toán marketing bằng ngôn ngữ tự nhiên. AI Agent đối chiếu
+    với tri thức năng lực của Antsomi CDP 365 (Segment, Zalo OA, App Push, Banner
+    Popup, thả voucher, đo lường) rồi trả về phán quyết: khả thi hay không, dùng
+    năng lực gì, các bước triển khai, và điểm cần làm rõ.</p>
+  </div>
+  <div class="panel">
+    <div class="panel-label">Đề bài của brand</div>
+    <textarea id="input" placeholder="Ví dụ: Tôi muốn gửi ưu đãi sinh nhật cho khách hàng hạng Vàng của TCH qua thông báo trên app..."></textarea>
+    <div class="examples">
+      <div class="lbl">Hoặc thử nhanh một use case mẫu:</div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="run">Đánh giá tính khả thi</button>
+      <button class="btn-ghost" id="reset">Xoá / Làm lại</button>
+    </div>
+    <div id="status"></div>
+  </div>
+  <div id="result"></div>
+</div>
+
+<script>
+const EXAMPLES = [
+  "Gửi ưu đãi sinh nhật cho khách hàng hạng Vàng của TCH qua thông báo trên app",
+  "Hiển thị popup mời đăng ký thành viên cho khách mở app TCH nhưng chưa đăng nhập",
+  "Tạo tập khách thân thiết: có từ 2 giao dịch tại Kichi miền Nam trong 6 tháng",
+  "Gửi tin nhắn Zalo OA kèm voucher giảm giá cho khách vừa quan tâm OA",
+  "Tự động gọi điện chăm sóc khách hàng VIP mỗi khi họ có khiếu nại",
+  "Đo doanh thu phát sinh sau chiến dịch App Push tháng này"
+];
+const VMETA = {
+  feasible:{cls:"feasible",icon:"\u2713",title:"Khả thi"},
+  partial:{cls:"partial",icon:"\u25D1",title:"Khả thi một phần"},
+  out:{cls:"out",icon:"\u2715",title:"Ngoài phạm vi hiện tại"}
+};
+
+const inputEl=document.getElementById("input");
+const chipsEl=document.getElementById("chips");
+const resultEl=document.getElementById("result");
+const statusEl=document.getElementById("status");
+const runBtn=document.getElementById("run");
+
+EXAMPLES.forEach(ex=>{
+  const c=document.createElement("div");
+  c.className="chip"; c.textContent=ex;
+  c.onclick=()=>{ inputEl.value=ex; };
+  chipsEl.appendChild(c);
+});
+
+function esc(s){return String(s).replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]));}
+
+function render(c){
+  const vm=VMETA[c.verdict]||VMETA.partial;
+  let html=`<div class="result">
+    <div class="verdict ${vm.cls}">
+      <div class="verdict-icon">${vm.icon}</div>
+      <div class="verdict-text">
+        <div class="v-title">${vm.title}</div>
+        <div class="v-score">Mức độ khả thi: ${c.score!=null?c.score:"-"}/100</div>
+      </div>
+    </div>
+    <div class="res-card">`;
+  if(c.summary){html+=`<div class="res-section"><div class="res-h"><span class="dot"></span>Phán quyết</div><div class="res-p">${esc(c.summary)}</div></div>`;}
+  if(c.interpreted){html+=`<div class="res-section"><div class="res-h"><span class="dot"></span>Diễn giải theo ngôn ngữ CDP</div><div class="res-p">${esc(c.interpreted)}</div></div>`;}
+  if(c.capabilities&&c.capabilities.length){
+    html+=`<div class="res-section"><div class="res-h"><span class="dot"></span>Năng lực nền tảng được sử dụng</div>`+
+      c.capabilities.map(x=>`<div class="feature-row"><span>\u25B8</span><span><span class="fn">${esc(x.name)} </span><span class="fr">\u2014 ${esc(x.role)}</span></span></div>`).join("")+`</div>`;
+  }
+  if(c.channels&&c.channels.length){
+    html+=`<div class="res-section"><div class="res-h"><span class="dot"></span>Kênh triển khai đề xuất</div><div>`+
+      c.channels.map(ch=>`<span class="tag">${esc(ch)}</span>`).join("")+`</div></div>`;
+  }
+  if(c.steps&&c.steps.length){
+    html+=`<div class="res-section"><div class="res-h"><span class="dot"></span>Các bước triển khai gợi ý</div><ul class="res-list steps">`+
+      c.steps.map(s=>`<li>${esc(s)}</li>`).join("")+`</ul></div>`;
+  }
+  if(c.gaps&&c.gaps.length){
+    html+=`<div class="res-section"><div class="res-h"><span class="dot"></span>Điểm cần làm rõ / ngoài phạm vi</div><div class="warn-box"><ul class="res-list">`+
+      c.gaps.map(g=>`<li>${esc(g)}</li>`).join("")+`</ul></div></div>`;
+  }
+  html+=`</div><div class="disclaimer">Phán quyết do AI sinh ra dựa trên tài liệu năng lực Antsomi CDP 365. Kết quả mang tính tham khảo, cần đội triển khai xác nhận.</div></div>`;
+  resultEl.innerHTML=html;
+  resultEl.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function evaluate(){
+  const v=inputEl.value.trim();
+  if(!v) return;
+  runBtn.disabled=true;
+  resultEl.innerHTML="";
+  statusEl.innerHTML=`<div class="loading"><div class="spinner"></div><span>AI Agent đang phân tích...</span></div><div class="stage" id="stg">Đang đối chiếu với năng lực nền tảng Antsomi...</div>`;
+  try{
+    const resp=await fetch("/api/evaluate",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({useCase:v})
+    });
+    const data=await resp.json();
+    if(!resp.ok){ throw new Error(data.error||("Lỗi "+resp.status)); }
+    statusEl.innerHTML="";
+    render(data);
+  }catch(e){
+    statusEl.innerHTML=`<div class="err">\u26A0 ${esc(e.message||"Đã xảy ra lỗi khi đánh giá.")}</div>`;
+  }finally{
+    runBtn.disabled=false;
+  }
+}
+
+runBtn.onclick=evaluate;
+document.getElementById("reset").onclick=()=>{ inputEl.value=""; resultEl.innerHTML=""; statusEl.innerHTML=""; };
+</script>
+</body>
+</html>
